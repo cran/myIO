@@ -1,0 +1,43 @@
+This package bundles the following third-party JavaScript and CSS libraries:
+
+Name:      D3.js
+Version:   7.9.0
+License:   ISC
+Copyright: 2010-2023 Mike Bostock
+URL:       https://d3js.org
+Source:    https://github.com/d3/d3
+
+Name:      d3-hexbin
+Version:   0.2.2
+License:   BSD-3-Clause
+Copyright: 2017 Mike Bostock
+URL:       https://github.com/d3/d3-hexbin
+
+Name:      d3-sankey
+Version:   0.12.3
+License:   BSD-3-Clause
+Copyright: 2019 Mike Bostock
+URL:       https://github.com/d3/d3-sankey
+
+Name:      jsPDF
+Version:   2.5.2
+License:   MIT
+Copyright: 2010-2021 James Hall, 2015-2021 yWorks GmbH, and contributors
+           credited in the file header of
+           inst/htmlwidgets/myIO/lib/jspdf/jspdf.umd.min.js
+URL:       https://github.com/parallax/jsPDF
+Source:    https://www.npmjs.com/package/jspdf
+
+DuckDB-WASM (https://github.com/duckdb/duckdb-wasm)
+Licensed under the MIT License.
+Copyright (c) 2018-present Stichting DuckDB Foundation.
+
+The DuckDB-WASM runtime is NOT distributed with this source tarball.
+Users opt in to download it at runtime via myIO::install_duckdb_wasm(),
+which fetches the binary from the upstream jsDelivr mirror into
+tools::R_user_dir("myIO", "cache") and verifies the sha256 against
+inst/duckdb-wasm-manifest.csv before use.
+
+Attribution above is provided because a wrapping R package is a work
+based on the combined system even when the runtime is downloaded at
+install time rather than shipped in the tarball.

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Transforms &amp; Theming</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Transforms &amp; Theming</h1>
+
+
+
+<div id="transforms" class="section level2">
+<h2>Transforms</h2>
+<p>Transforms derive new data from an existing layer before rendering.
+You specify a transform with the <code>transform</code> argument in
+<code>addIoLayer()</code>.</p>
+<div id="available-transforms" class="section level3">
+<h3>Available Transforms</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="39%" />
+<col width="27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Transform</th>
+<th>Description</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>&quot;identity&quot;</code></td>
+<td>Default. Passes data through unchanged.</td>
+<td>All types</td>
+</tr>
+<tr class="even">
+<td><code>&quot;lm&quot;</code></td>
+<td>Fits a linear model and returns fitted values.</td>
+<td><code>line</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;loess&quot;</code></td>
+<td>LOESS non-linear smoothing. Options: <code>span</code>,
+<code>degree</code>, <code>n_grid</code>.</td>
+<td><code>line</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;polynomial&quot;</code></td>
+<td>Polynomial regression. Options: <code>degree</code>,
+<code>n_grid</code>.</td>
+<td><code>line</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;ci&quot;</code></td>
+<td>Confidence or prediction interval band. Options:
+<code>method</code>, <code>level</code>, <code>interval</code>.</td>
+<td><code>area</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;smooth&quot;</code></td>
+<td>Simple or exponential moving average. Options: <code>method</code>
+(<code>&quot;sma&quot;</code>/<code>&quot;ema&quot;</code>), <code>window</code>,
+<code>alpha</code>.</td>
+<td><code>line</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;mean&quot;</code></td>
+<td>Group mean aggregation.</td>
+<td><code>point</code>, <code>bar</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;mean_ci&quot;</code></td>
+<td>Group mean ± confidence interval. Options: <code>level</code>,
+<code>method</code> (<code>&quot;t&quot;</code>/<code>&quot;se&quot;</code>).</td>
+<td><code>rangeBar</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;residuals&quot;</code></td>
+<td>Regression residuals vs. fitted values. Options:
+<code>method</code>.</td>
+<td><code>point</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;summary&quot;</code></td>
+<td>General aggregation. Options: <code>stat</code>
+(<code>&quot;count&quot;</code>/<code>&quot;sum&quot;</code>/<code>&quot;sd&quot;</code>/<code>&quot;var&quot;</code>/<code>&quot;min&quot;</code>/<code>&quot;max&quot;</code>).</td>
+<td><code>point</code>, <code>bar</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;cumulative&quot;</code></td>
+<td>Computes running totals with base/cumulative columns.</td>
+<td><code>waterfall</code> (auto-applied)</td>
+</tr>
+<tr class="even">
+<td><code>&quot;quantiles&quot;</code></td>
+<td>Computes Q1, median, Q3, whisker bounds per group.</td>
+<td><code>boxplot</code> (internal)</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;median&quot;</code></td>
+<td>Computes group medians.</td>
+<td><code>boxplot</code>, <code>violin</code> (internal)</td>
+</tr>
+<tr class="even">
+<td><code>&quot;outliers&quot;</code></td>
+<td>Returns rows beyond 1.5x IQR fences.</td>
+<td><code>boxplot</code> (internal)</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;density&quot;</code></td>
+<td>Kernel density estimation via <code>stats::density()</code>.</td>
+<td><code>violin</code>, <code>ridgeline</code> (internal)</td>
+</tr>
+</tbody>
+</table>
+<p>Transforms marked “internal” are applied automatically by composite
+chart types. The first 10 transforms are user-facing — use them directly
+in <code>addIoLayer()</code>.</p>
+</div>
+<div id="linear-model-trend-line" class="section level3">
+<h3>Linear Model Trend Line</h3>
+<p>Add a trend line to a scatter plot by combining a
+<code>&quot;point&quot;</code> layer with a <code>&quot;line&quot;</code> layer that uses
+<code>transform = &quot;lm&quot;</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">myIO</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;point&quot;</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;#E69F00&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;points&quot;</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">data =</span> mtcars,</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;line&quot;</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;lm&quot;</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;red&quot;</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;trend&quot;</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>    <span class="at">data =</span> mtcars,</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  )</span></code></pre></div>
+<p>The <code>lm</code> transform fits <code>y ~ x</code> using
+<code>stats::lm()</code> and replaces the y values with the fitted
+values. The resulting line is sorted by x so it renders as a smooth
+trend.</p>
+</div>
+<div id="cumulative-transform-waterfall" class="section level3">
+<h3>Cumulative Transform (Waterfall)</h3>
+<p>The <code>&quot;cumulative&quot;</code> transform is auto-applied when you use
+<code>type = &quot;waterfall&quot;</code>. It computes running totals and produces
+<code>_base_y</code> and <code>_cumulative_y</code> columns that the
+waterfall renderer uses for floating bars:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="at">step  =</span> <span class="fu">c</span>(<span class="st">&quot;Start&quot;</span>, <span class="st">&quot;Sales&quot;</span>, <span class="st">&quot;Returns&quot;</span>, <span class="st">&quot;Total&quot;</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">value =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">50</span>, <span class="sc">-</span><span class="dv">20</span>, <span class="cn">NA</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">is_total =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">myIO</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;waterfall&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;bridge&quot;</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>    <span class="at">data =</span> df,</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;step&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;value&quot;</span>, <span class="at">total =</span> <span class="st">&quot;is_total&quot;</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="fu">defineCategoricalAxis</span>(<span class="at">xAxis =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="confidence-interval-band" class="section level3">
+<h3>Confidence Interval Band</h3>
+<p>Overlay a confidence interval on a scatter plot:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;point&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#4E79A7&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Data&quot;</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Trend&quot;</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;lm&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;area&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;95% CI&quot;</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;ci&quot;</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">level =</span> <span class="fl">0.95</span>))</span></code></pre></div>
+<p>The <code>ci</code> transform accepts <code>method</code>
+(<code>&quot;lm&quot;</code> or <code>&quot;loess&quot;</code>), <code>level</code> (default
+0.95), and <code>interval</code> (<code>&quot;confidence&quot;</code> or
+<code>&quot;prediction&quot;</code>). The mapping only needs <code>x_var</code>
+and <code>y_var</code> — <code>low_y</code>/<code>high_y</code> are
+auto-injected.</p>
+</div>
+<div id="loess-smoothing" class="section level3">
+<h3>LOESS Smoothing</h3>
+<p>Non-linear smoothing with adjustable span:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;point&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#4E79A7&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Data&quot;</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;LOESS&quot;</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;loess&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">span =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+</div>
+<div id="mean-ci-error-bars" class="section level3">
+<h3>Mean ± CI Error Bars</h3>
+<p>Group means with confidence intervals:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> iris) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;rangeBar&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#4E79A7&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Mean ± 95% CI&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;mean_ci&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;Species&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;Sepal.Length&quot;</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">level =</span> <span class="fl">0.95</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="fu">defineCategoricalAxis</span>(<span class="at">xAxis =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="regression-composite" class="section level3">
+<h3>Regression Composite</h3>
+<p>One-call scatter + trend + CI + R²:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;regression&quot;</span>, <span class="at">label =</span> <span class="st">&quot;MPG vs Weight&quot;</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">showCI =</span> <span class="cn">TRUE</span>, <span class="at">showStats =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+</div>
+<div id="moving-average" class="section level3">
+<h3>Moving Average</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="at">y =</span> <span class="fu">cumsum</span>(<span class="fu">rnorm</span>(<span class="dv">100</span>)))</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> df) <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#CCCCCC&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Raw&quot;</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;x&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;y&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;SMA-10&quot;</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;smooth&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;x&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;y&quot;</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">method =</span> <span class="st">&quot;sma&quot;</span>, <span class="at">window =</span> <span class="dv">10</span>))</span></code></pre></div>
+<p>Use <code>method = &quot;ema&quot;</code> with <code>alpha</code> for
+exponential moving average.</p>
+</div>
+<div id="transform-type-compatibility" class="section level3">
+<h3>Transform + Type Compatibility</h3>
+<p>Not every transform works with every chart type. The table below
+shows valid combinations:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="77%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Supported Transforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>&quot;line&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;lm&quot;</code>, <code>&quot;loess&quot;</code>,
+<code>&quot;polynomial&quot;</code>, <code>&quot;smooth&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;point&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;mean&quot;</code>,
+<code>&quot;summary&quot;</code>, <code>&quot;residuals&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;bar&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;mean&quot;</code>,
+<code>&quot;summary&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;area&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;ci&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;rangeBar&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;mean_ci&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;groupedBar&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;histogram&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;hexbin&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;treemap&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;donut&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;gauge&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;heatmap&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;candlestick&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;waterfall&quot;</code></td>
+<td><code>&quot;identity&quot;</code>, <code>&quot;cumulative&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;sankey&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;boxplot&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;violin&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>&quot;ridgeline&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>&quot;text&quot;</code></td>
+<td><code>&quot;identity&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<p>If you pass an incompatible combination, <code>addIoLayer()</code>
+will error with a clear message.</p>
+</div>
+</div>
+<div id="theming" class="section level2">
+<h2>Theming</h2>
+<p>Use <code>setTheme()</code> to customize chart appearance with CSS
+custom properties.</p>
+<div id="basic-theming" class="section level3">
+<h3>Basic Theming</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">myIO</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;point&quot;</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;#56B4E9&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;scatter&quot;</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    <span class="at">data =</span> mtcars,</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="fu">setTheme</span>(</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    <span class="at">text_color =</span> <span class="st">&quot;#e0e0e0&quot;</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>    <span class="at">grid_color =</span> <span class="st">&quot;#333333&quot;</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>    <span class="at">bg =</span> <span class="st">&quot;#1a1a2e&quot;</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    <span class="at">font =</span> <span class="st">&quot;Fira Code, monospace&quot;</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+<div id="theme-parameters" class="section level3">
+<h3>Theme Parameters</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>CSS Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>text_color</code></td>
+<td><code>--chart-text-color</code></td>
+<td>Axis labels and tick text</td>
+</tr>
+<tr class="even">
+<td><code>grid_color</code></td>
+<td><code>--chart-grid-color</code></td>
+<td>Grid and axis lines</td>
+</tr>
+<tr class="odd">
+<td><code>bg</code></td>
+<td><code>--chart-bg</code></td>
+<td>Chart background color</td>
+</tr>
+<tr class="even">
+<td><code>font</code></td>
+<td><code>--chart-font</code></td>
+<td>Font family</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="custom-properties" class="section level3">
+<h3>Custom Properties</h3>
+<p>Pass additional CSS custom properties via <code>...</code> (the
+<code>chart-</code> prefix is added automatically):</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">myIO</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;bar&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;coral&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;bars&quot;</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>    <span class="at">data =</span> mtcars,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;cyl&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="fu">defineCategoricalAxis</span>(<span class="at">xAxis =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">setTheme</span>(</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    <span class="at">bg =</span> <span class="st">&quot;#fafafa&quot;</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    <span class="at">text_color =</span> <span class="st">&quot;#333&quot;</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    <span class="st">&quot;border-radius&quot;</span> <span class="ot">=</span> <span class="st">&quot;8px&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+<div id="dark-mode-example" class="section level3">
+<h3>Dark Mode Example</h3>
+<p>Combine theming with color choices for a dark-mode chart:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>aq <span class="ot">&lt;-</span> airquality</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>aq<span class="sc">$</span>Month <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;M&quot;</span>, aq<span class="sc">$</span>Month)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="fu">myIO</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">&quot;line&quot;</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">c</span>(<span class="st">&quot;#00d2ff&quot;</span>, <span class="st">&quot;#ff6b6b&quot;</span>, <span class="st">&quot;#feca57&quot;</span>, <span class="st">&quot;#48dbfb&quot;</span>, <span class="st">&quot;#ff9ff3&quot;</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">&quot;Month&quot;</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    <span class="at">data =</span> aq,</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;Day&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;Temp&quot;</span>, <span class="at">group =</span> <span class="st">&quot;Month&quot;</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="fu">setTheme</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>    <span class="at">text_color =</span> <span class="st">&quot;#b0b0b0&quot;</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>    <span class="at">grid_color =</span> <span class="st">&quot;#2d2d2d&quot;</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>    <span class="at">bg =</span> <span class="st">&quot;#0d1117&quot;</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>    <span class="at">font =</span> <span class="st">&quot;Inter, system-ui, sans-serif&quot;</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

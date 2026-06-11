@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Why myIO</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Why myIO</h1>
+
+
+
+<div id="the-problem" class="section level2">
+<h2>The problem</h2>
+<p>R has excellent interactive visualization packages. So why build
+another one?</p>
+<p>myIO addresses a specific gap in the ecosystem:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Translation layers lose statistical annotations.</strong>
+Converting <code>ggplot2</code> objects to interactive formats can drop
+confidence interval ribbons, regression equations, and label geoms. This
+is an inherent limitation of translating between grammars.</p></li>
+<li><p><strong>Statistical overlays require manual assembly.</strong>
+With most interactive packages, users must pre-compute confidence
+intervals, regression diagnostics, and error bars in R, then manually
+layer them onto charts. This is tedious and error-prone.</p></li>
+<li><p><strong>Native R-side computation enables composability.</strong>
+By computing transforms in R and rendering in D3.js, myIO avoids
+translation artifacts entirely. The statistical layer and the rendering
+layer connect through a clean data contract.</p></li>
+</ol>
+<p>myIO solves this with a <strong>composable transform
+pipeline</strong>: statistical computation happens in R (where it
+belongs), rendering happens in D3.js (where it’s beautiful), and the two
+connect through a clean data contract.</p>
+</div>
+<div id="what-myio-does-differently" class="section level2">
+<h2>What myIO does differently</h2>
+<div id="confidence-intervals-as-first-class-layers" class="section level3">
+<h3>1. Confidence intervals as first-class layers</h3>
+<p>Confidence interval bands are notoriously difficult to render
+correctly in interactive charts built through translation layers. myIO
+computes CI bands natively in R and renders them as a first-class area
+layer:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;point&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#4E79A7&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Data&quot;</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Trend&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;lm&quot;</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;area&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#E15759&quot;</span>, <span class="at">label =</span> <span class="st">&quot;95% CI&quot;</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;ci&quot;</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">level =</span> <span class="fl">0.95</span>))</span></code></pre></div>
+<p>The <code>ci</code> transform uses <code>stats::predict()</code> with
+<code>interval = &quot;confidence&quot;</code> and outputs a grid of
+<code>low_y</code> / <code>high_y</code> bounds. The area renderer
+displays them as a smooth band. Prediction intervals work the same way
+with <code>options = list(interval = &quot;prediction&quot;)</code>.</p>
+</div>
+<div id="one-line-regression-with-r²-annotation" class="section level3">
+<h3>2. One-line regression with R² annotation</h3>
+<p>Displaying a regression equation alongside an interactive chart
+typically requires multiple packages and manual assembly. myIO’s
+<code>regression</code> composite handles the entire workflow in one
+call:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;regression&quot;</span>, <span class="at">label =</span> <span class="st">&quot;MPG vs Weight&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">showCI =</span> <span class="cn">TRUE</span>, <span class="at">showStats =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<p>This auto-expands into four sub-layers: scatter points, trend line,
+CI band, and an R² annotation — all styled consistently. Change
+<code>method</code> to <code>&quot;loess&quot;</code> or <code>&quot;polynomial&quot;</code>
+to switch the model.</p>
+</div>
+<div id="composable-transforms" class="section level3">
+<h3>3. Composable transforms</h3>
+<p>Every myIO chart uses the same pattern: <strong>type + transform =
+layer</strong>. Transforms are R functions that compute statistical
+summaries and return a data frame. The renderer doesn’t know or care
+what the numbers mean — it just plots fields.</p>
+<p>This means you can compose transforms freely:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Scatter + LOESS smooth + CI band + residual plot</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> mtcars) <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;point&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Data&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;line&quot;</span>, <span class="at">label =</span> <span class="st">&quot;LOESS&quot;</span>, <span class="at">transform =</span> <span class="st">&quot;loess&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">span =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+<p>Available transforms:</p>
+<table>
+<colgroup>
+<col width="30%" />
+<col width="47%" />
+<col width="22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Transform</th>
+<th>What it computes</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>&quot;lm&quot;</code></td>
+<td>Linear regression fitted values</td>
+<td>Line</td>
+</tr>
+<tr class="even">
+<td><code>&quot;loess&quot;</code></td>
+<td>LOESS non-linear smoothing</td>
+<td>Line</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;polynomial&quot;</code></td>
+<td>Polynomial regression (degree N)</td>
+<td>Line</td>
+</tr>
+<tr class="even">
+<td><code>&quot;ci&quot;</code></td>
+<td>Confidence or prediction interval</td>
+<td>Area band</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;smooth&quot;</code></td>
+<td>Simple or exponential moving average</td>
+<td>Line</td>
+</tr>
+<tr class="even">
+<td><code>&quot;mean&quot;</code></td>
+<td>Group mean</td>
+<td>Points or bars</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;mean_ci&quot;</code></td>
+<td>Group mean ± confidence interval</td>
+<td>Range bars (error bars)</td>
+</tr>
+<tr class="even">
+<td><code>&quot;residuals&quot;</code></td>
+<td>Regression residuals vs. fitted</td>
+<td>Points</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;summary&quot;</code></td>
+<td>Aggregation (count, sum, sd, var, min, max)</td>
+<td>Points or bars</td>
+</tr>
+</tbody>
+</table>
+<p>All transforms use base R’s <code>stats</code> package — no
+additional dependencies.</p>
+</div>
+<div id="composite-charts-expand-into-primitives" class="section level3">
+<h3>4. Composite charts expand into primitives</h3>
+<p>Complex statistical charts like boxplots and violins are defined as
+<strong>composites</strong> that auto-expand into simpler layers:</p>
+<pre><code>boxplot → rangeBar (IQR) + point (whisker caps) + point (median) + point (outliers)
+violin  → area (density) + rangeBar (IQR box) + point (median)
+regression → point (scatter) + line (trend) + area (CI band) + text (R²)</code></pre>
+<p>Each sub-layer renders independently, which means:</p>
+<ul>
+<li>The IQR box can have a different color than the whiskers</li>
+<li>Outliers can be toggled on/off via
+<code>options = list(showOutliers = TRUE)</code></li>
+<li>Tooltips work on every sub-component</li>
+<li>Animations are layered (whiskers grow from box edges, then caps
+appear)</li>
+</ul>
+<p>You don’t need to know about this decomposition — just call
+<code>addIoLayer(type = &quot;boxplot&quot;, ...)</code> and it works. But if you
+need custom control, you can compose the sub-layers manually.</p>
+</div>
+<div id="error-bars-with-one-line" class="section level3">
+<h3>5. Error bars with one line</h3>
+<p>Mean ± confidence interval bars are a standard in scientific
+publications. In most interactive viz packages, you must compute the CI
+yourself and manually assemble the layers.</p>
+<p>myIO does it in one call:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">myIO</span>(<span class="at">data =</span> iris) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">addIoLayer</span>(<span class="at">type =</span> <span class="st">&quot;rangeBar&quot;</span>, <span class="at">label =</span> <span class="st">&quot;Mean ± 95% CI&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">transform =</span> <span class="st">&quot;mean_ci&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;Species&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;Sepal.Length&quot;</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">level =</span> <span class="fl">0.95</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="fu">defineCategoricalAxis</span>(<span class="at">xAxis =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="fu">setAxisFormat</span>(<span class="at">xLabel =</span> <span class="st">&quot;Species&quot;</span>, <span class="at">yLabel =</span> <span class="st">&quot;Sepal Length&quot;</span>)</span></code></pre></div>
+<p>The <code>mean_ci</code> transform computes the group mean, standard
+error, and t-distribution CI bounds — matching
+<code>stats::t.test()</code> output exactly.</p>
+</div>
+</div>
+<div id="design-philosophy" class="section level2">
+<h2>Design philosophy</h2>
+<p>myIO follows three principles:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>R computes, D3 renders.</strong> Statistical computation
+stays in R where the ecosystem is strongest. JavaScript handles
+rendering and interaction. There is no translation layer that can
+break.</p></li>
+<li><p><strong>Type + transform = layer.</strong> Every chart is built
+from the same two concepts. This makes the API small and predictable —
+15 transforms and 18 chart types compose into hundreds of
+visualizations.</p></li>
+<li><p><strong>Composites expand into primitives.</strong> Complex
+charts decompose into simpler ones. This means new statistical overlays
+don’t require new renderers — they reuse existing ones.</p></li>
+</ol>
+<div id="bidirectional-io" class="section level3">
+<h3>6. Bidirectional I/O</h3>
+<p>Most charting libraries are output-only: data goes in, a picture
+comes out. myIO is an <strong>information system</strong> — user
+interactions flow back as structured data:</p>
+<ul>
+<li><code>setBrush()</code>: rectangle select returns selected rows</li>
+<li><code>setAnnotation()</code>: click to label points; export
+annotations as a data frame</li>
+<li><code>setLinked()</code>: Crosstalk cross-widget brushing</li>
+<li><code>setSlider()</code>: parameter sliders that trigger R
+recomputation</li>
+</ul>
+<p>This means the visualization is not just a display — it is an input
+device.</p>
+</div>
+</div>
+<div id="when-to-use-myio" class="section level2">
+<h2>When to use myIO</h2>
+<p>myIO is a good fit when you need:</p>
+<ul>
+<li>Interactive statistical charts in Shiny apps or R Markdown</li>
+<li>Confidence intervals, regression lines, or error bars that render
+correctly</li>
+<li>Composable overlays (scatter + trend + CI band + annotation)</li>
+<li>Brush selection that returns data, not just visual feedback</li>
+<li>Click-to-annotate for flagging outliers, events, or regions of
+interest</li>
+<li>Linked views across multiple charts via Crosstalk</li>
+<li>Moving average or smoothing overlays on time-series data</li>
+<li>Regression diagnostics (residual plots)</li>
+<li>Publication-quality D3.js rendering with minimal code</li>
+</ul>
+</div>
+<div id="when-to-use-something-else" class="section level2">
+<h2>When to use something else</h2>
+<ul>
+<li><strong>ggplot2 + ggiraph</strong>: If you need the full ggplot2
+grammar and just want hover/click interactivity added on top. ggiraph
+faithfully preserves ggplot2 output.</li>
+<li><strong>echarts4r</strong>: If you need 30+ chart types and don’t
+mind learning a non-ggplot2 API. echarts4r has broader chart
+coverage.</li>
+<li><strong>plotly</strong>: If you have existing ggplotly() code that
+works and don’t need CI bands or statistical annotations.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
