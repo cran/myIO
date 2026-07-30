@@ -4,13 +4,13 @@
 # --- Backward compatibility (must pass NOW) ---
 
 test_that("existing setTheme API still works (flat dict)", {
-  w <- setTheme(myIO(), text_color = "red")
+  w <- setTheme(myIO(), textColor = "red")
   # v1.2 uses nested structure: theme$values
   expect_equal(w$x$config$theme$values[["--chart-text-color"]], "red")
 })
 
 test_that("setTheme with all named args stores in values", {
-  w <- setTheme(myIO(), text_color = "white", grid_color = "#333",
+  w <- setTheme(myIO(), textColor = "white", gridColor = "#333",
                 bg = "#1a1a2e", font = "monospace")
   expect_equal(w$x$config$theme$values[["--chart-text-color"]], "white")
   expect_equal(w$x$config$theme$values[["--chart-grid-color"]], "#333")
@@ -42,6 +42,31 @@ test_that("setTheme light mode", {
 
 test_that("setTheme rejects invalid mode", {
   expect_error(setTheme(myIO(), mode = "neon"), "mode")
+})
+
+test_that("setTheme mode error is fn-prefixed and lists valid choices", {
+  expect_error(setTheme(myIO(), mode = "neon"),
+               'setTheme\\(\\): `mode` must be "light", "dark", "auto"')
+})
+
+# --- E5: warn on unknown (non `--`) dots, with did-you-mean ---
+
+test_that("setTheme warns on a typo'd theme arg instead of silently dropping it", {
+  expect_warning(setTheme(myIO(), text_colour = "#222"),
+                 "ignoring unknown argument")
+  expect_warning(setTheme(myIO(), text_colour = "#222"),
+                 "Did you mean `textColor`")
+})
+
+test_that("setTheme does not warn for valid -- prefixed overrides via dots", {
+  expect_warning(setTheme(myIO(), "--chart-ref-line-color" = "yellow"), NA)
+})
+
+test_that("setTheme still applies valid -- overrides even when an unknown arg is present", {
+  w <- suppressWarnings(
+    setTheme(myIO(), "--chart-ref-line-color" = "yellow", bogus = 1)
+  )
+  expect_equal(w$x$config$theme$values[["--chart-ref-line-color"]], "yellow")
 })
 
 test_that("mode defaults to NULL when not specified", {

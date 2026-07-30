@@ -1,3 +1,132 @@
+# myIO 1.3.0
+
+## New features
+
+* Keyframe storytelling adds `addKeyframe()` for named, transformed data
+  snapshots and accessible previous/play-pause/next controls. Single-layer
+  charts accept a data frame; multi-layer charts accept a named list keyed by
+  layer label, with omitted layers retaining their prior state. Playback runs
+  once and stops at the final frame, while reduced-motion and zero-duration
+  transitions remain fully step- and play-capable. Shiny applications can use
+  `setKeyframe()` and `stepKeyframe()` through the existing instance registry.
+* WebR 0.6.0 compatibility is now a blocking CI contract: the package and its
+  dependencies are compiled with the official r-wasm action, loaded in WebR,
+  used to create and serialize a real widget, and rendered with the production
+  bundle in Chromium. The verified path does not claim DuckDB-WASM support or
+  universal compatibility across browser hosts.
+
+* Legend/button UI streamlining (#84): charts now show exactly one legend
+  surface at a time. When a discrete chart's compact in-plot legend is showing,
+  the chart-controls panel no longer repeats the same legend and becomes
+  actions-only (this supersedes the 1.2.0 note that kept the action-sheet
+  legend alongside the new inline one). The in-plot legend is now interactive —
+  click or keyboard (Enter/Space) toggles a series on/off, with `role="switch"`
+  semantics matching the panel legend. Charts with more than 10 series, or
+  containers too narrow to fit the strip legibly, move the full legend to the
+  panel instead of truncating (previously the strip silently cut off at 10
+  items). Inline legend rows now wrap by measured width rather than item count.
+  No R API changes; `suppressLegend()` behaves exactly as before.
+* Responsive chart-controls behavior now keys off the widget's own container
+  width everywhere, instead of a mix of container width (panel docking) and
+  browser viewport width (button position, sheet drag handle). A narrow widget
+  embedded in a wide page — dashboard grids, side-by-side layouts — gets a
+  coherent narrow-tier UI. The panel legend's two-column grid is now driven by
+  item count on all sizes, not just narrow containers.
+
+* New `setTransition(duration, easing, stagger)` configures chart animations:
+  `duration` in milliseconds, `easing` (one of `"linear"`, `"quad"`, `"cubic"`,
+  `"sin"`, `"exp"`, `"circle"`, `"back"`, `"bounce"`, `"elastic"`, mapped to the
+  corresponding d3 easing), and `stagger` (per-element cascade delay in ms).
+  All arguments are optional and additive; unset values keep each renderer's
+  existing defaults, so the change is fully backward compatible.
+  `setTransitionSpeed()` is now a thin wrapper over `setTransition(duration = )`.
+  Animation stays fully opt-out-able: `duration = 0` disables it, and easing and
+  stagger automatically no-op when the effective duration is 0, including under
+  the viewer's `prefers-reduced-motion: reduce` system setting. A Playwright e2e
+  spec verifies animate-when-on, still-when-off, and still-under-reduced-motion.
+* New opt-in `"lttb"` transform for `line` layers downsamples a large series
+  with Largest-Triangle-Three-Buckets, shipping at most `options$threshold`
+  points (default 2000) while preserving the visual shape:
+  `addIoLayer(type = "line", transform = "lttb", options = list(threshold = 1000))`.
+  Off by default (`identity`); runs on the in-memory/SVG path and is independent
+  of the DuckDB-WASM engine's own SQL-side LTTB, so it never double-downsamples.
+* New `myIOProxy()` + `updateMyIOData()` update a rendered chart's layer data in
+  place from the Shiny server without re-running `renderMyIO()`. Layers are
+  matched by label and swapped through the existing data-join path, so only the
+  changed marks transition and brush/zoom/toggle state is preserved (the full
+  re-render destroyed and recreated the chart, flickering and dropping state):
+  `myIOProxy("chart") |> updateMyIOData(series = new_df)`.
+
+## Performance and tooling
+
+* Release dependency intake updates the GitHub Actions, browser-test, Arrow,
+  MCP, and JavaScript security transitive dependencies through PRs #91--#100.
+  The MCP server now resolves `@hono/node-server` 2.0.12 and declares Node.js
+  20 or newer as its runtime floor; its conformance, stdio smoke, and audit
+  gates pass with zero known npm vulnerabilities.
+* The production JavaScript bundle is now minified. The shipped
+  `inst/htmlwidgets/myIO/myIOapi.js` drops from 2.32 MB to 1.20 MB raw
+  (398,650 to 298,757 bytes gzipped, -25%) with no behavior change; the
+  development `watch` build stays unminified for debugging.
+* End-to-end tests now run from a committed `playwright.config.ts` and a new
+  `e2e` CI workflow. The suite builds and loads the minified `myIOapi.js`,
+  guarding the production bundle that source-importing unit tests cannot catch.
+* Touch interaction is now verified end-to-end: a touch-emulation Playwright spec
+  on iOS- and Android-class viewports confirms a `touchstart` on a bar surfaces
+  the tooltip with the datum's content and `touchend` dismisses it, guarding the
+  mobile hover path against the production bundle.
+* The `file://` deployment e2e (self-contained widget opened directly from disk)
+  is now exercised for real: its fixture loads the IIFE bundle via a classic
+  `<script src>` rather than an ES module, so the file-protocol → SVG-engine
+  fallback is verified under `file://` instead of skipped.
+
+## Improved error messages and API ergonomics
+
+* Argument names are now consistently camelCase across setters. `setBrush(onSelect)`,
+  `setFacet(minWidth, labelPosition)`, `setTheme(textColor, gridColor)`, and
+  `setBigData(rowkeyCol)` are the canonical forms (matching `colorScheme`, `xAxis`,
+  etc.). The previous snake_case names (`on_select`, `min_width`, `label_position`,
+  `text_color`, `grid_color`, `rowkey_col`) keep working as deprecated aliases that
+  emit a one-line warning; existing code is unaffected aside from the warning. When
+  both forms are supplied the camelCase value wins.
+* `setFacet()`, `setLayerOpacity()`, and `setTheme(mode = )` now report invalid
+  arguments with consistent, actionable messages (e.g.
+  `setFacet(): \`scales\` must be "fixed", "free_x", "free_y", "free", not "x".`)
+  instead of bare `stopifnot()` failures. `setColorScheme()` errors are likewise
+  function-prefixed. No change to which inputs are accepted.
+* `setTheme()` now warns when passed an unknown argument that lacks the required
+  `--` prefix (e.g. a misspelled `text_colour`) and suggests the intended
+  argument, instead of silently dropping it. Valid `--`-prefixed CSS overrides
+  are unaffected.
+* `setTheme()` documents the named `preset` values (`"midnight"`, `"ocean"`,
+  `"forest"`, `"sunset"`, `"monochrome"`, `"neon"`, `"corporate"`, `"academic"`,
+  `"nature"`, `"minimal"`, `"retro"`, `"warm"`, plus `"light"`/`"dark"`); the
+  `preset` argument was already functional.
+* `setLinked()` and `linkCharts()` now cross-reference each other in their
+  documentation to clarify when to use the Crosstalk path versus the
+  group-identifier path.
+## Documentation
+
+* New "Theme Gallery" article renders the same chart under all named presets
+  (`midnight`, `ocean`, `forest`, `sunset`, `monochrome`, `neon`, `corporate`,
+  `academic`, `nature`, `minimal`, `retro`, `warm`, plus `light`/`dark`) as
+  live, side-by-side previews, and shows how to layer custom CSS overrides on
+  top of a preset.
+## Performance and reliability
+
+* Inline Arrow IPC payloads now decode via the native `Uint8Array.fromBase64`
+  when the browser provides it (falling back to the previous `atob` loop),
+  avoiding a per-character JavaScript callback over large payloads in the
+  in-memory and DuckDB-WASM engines.
+* Added a regression test confirming charts that already render an inline
+  legend are not given a duplicated legend on image/SVG export (GH #64).
+* Layer-data serialization (`addIoLayer()`) is faster for large data: the
+  row-rectangling step now extracts columns once and indexes per row instead of
+  subsetting the data frame on every row, roughly 5x faster at 100k rows. The
+  emitted JSON is byte-identical to before (pinned by tests across numeric,
+  integer, character, logical, factor, Date, and POSIXct columns), so every
+  chart type renders exactly as it did.
+
 # myIO 1.2.0
 
 ## LLM tool-calling schema

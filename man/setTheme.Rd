@@ -6,8 +6,8 @@
 \usage{
 setTheme(
   myIO,
-  text_color = NULL,
-  grid_color = NULL,
+  textColor = NULL,
+  gridColor = NULL,
   bg = NULL,
   font = NULL,
   mode = NULL,
@@ -19,9 +19,9 @@ setTheme(
 \arguments{
 \item{myIO}{an htmlwidget object created by the myIO() function}
 
-\item{text_color}{text and label color}
+\item{textColor}{text and label color}
 
-\item{grid_color}{grid line color}
+\item{gridColor}{grid line color}
 
 \item{bg}{background color}
 
@@ -30,13 +30,20 @@ setTheme(
 \item{mode}{Character or NULL. Theme mode: "light", "dark", or "auto".
 Default NULL (no mode, manual CSS vars only).}
 
-\item{preset}{Character or NULL. Named preset (reserved for future use).
-Default NULL.}
+\item{preset}{Character or NULL. Named theme preset applied as a complete
+palette. One of \code{"light"}, \code{"dark"}, \code{"midnight"},
+\code{"ocean"}, \code{"forest"}, \code{"sunset"}, \code{"monochrome"},
+\code{"neon"}, \code{"corporate"}, \code{"academic"}, \code{"nature"},
+\code{"minimal"}, \code{"retro"}, or \code{"warm"}. Unrecognized values are
+ignored. Default NULL.}
 
 \item{overrides}{Named list of CSS custom property overrides
 (e.g., \code{list("--chart-tooltip-bg" = "#222")}).}
 
-\item{...}{additional CSS custom property overrides with `--` prefix}
+\item{...}{additional CSS custom property overrides; only names with a
+\code{--} prefix are applied. Also accepts the deprecated \code{text_color}
+and \code{grid_color} aliases for \code{textColor} and \code{gridColor}.
+Other names are ignored with a warning.}
 }
 \value{
 A modified \code{myIO} htmlwidget object with updated theme
@@ -47,7 +54,7 @@ Sets chart theme tokens using CSS custom properties
 }
 \examples{
 myIO() |>
-  setTheme(text_color = "#222222", grid_color = "#d9d9d9")
+  setTheme(textColor = "#222222", gridColor = "#d9d9d9")
 
 myIO() |>
   setTheme(mode = "dark", bg = "#1a1a2e")

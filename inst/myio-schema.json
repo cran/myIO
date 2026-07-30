@@ -31,7 +31,8 @@
         "lm",
         "loess",
         "polynomial",
-        "smooth"
+        "smooth",
+        "lttb"
       ],
       "group": "axes-continuous",
       "data_contract": {
@@ -1111,7 +1112,8 @@
     "qq",
     "survfit",
     "fit_distribution",
-    "quantile_dots"
+    "quantile_dots",
+    "lttb"
   ],
   "compatibility_groups": {
     "line": "axes-continuous",
@@ -1248,6 +1250,11 @@
       "transform",
       "options"
     ],
+    "addKeyframe": [
+      "myIO",
+      "data",
+      "label"
+    ],
     "clear_duckdb_wasm_cache": [
       "version"
     ],
@@ -1313,6 +1320,10 @@
       "width",
       "height"
     ],
+    "myIOProxy": [
+      "outputId",
+      "session"
+    ],
     "print.myIO_duckdb_wasm_status": [
       "x",
       "..."
@@ -1344,13 +1355,14 @@
     "setBigData": [
       "widget",
       "source",
-      "rowkey_col",
+      "rowkeyCol",
       "..."
     ],
     "setBrush": [
       "myIO",
       "direction",
-      "on_select"
+      "onSelect",
+      "..."
     ],
     "setColorScheme": [
       "myIO",
@@ -1370,9 +1382,14 @@
       "myIO",
       "var",
       "ncol",
-      "min_width",
+      "minWidth",
       "scales",
-      "label_position"
+      "labelPosition",
+      "..."
+    ],
+    "setKeyframe": [
+      "proxy",
+      "frame"
     ],
     "setLayerOpacity": [
       "myIO",
@@ -1418,8 +1435,8 @@
     ],
     "setTheme": [
       "myIO",
-      "text_color",
-      "grid_color",
+      "textColor",
+      "gridColor",
       "bg",
       "font",
       "mode",
@@ -1440,9 +1457,19 @@
       "myIO",
       "suppressY"
     ],
+    "setTransition": [
+      "myIO",
+      "duration",
+      "easing",
+      "stagger"
+    ],
     "setTransitionSpeed": [
       "myIO",
       "speed"
+    ],
+    "stepKeyframe": [
+      "proxy",
+      "direction"
     ],
     "stop_duckdb_wasm_missing": [],
     "suppressAxis": [
@@ -1453,6 +1480,10 @@
     "suppressLegend": [
       "myIO",
       "suppressLegend"
+    ],
+    "updateMyIOData": [
+      "proxy",
+      "..."
     ]
   }
 }

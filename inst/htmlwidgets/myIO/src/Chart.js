@@ -22,6 +22,7 @@ import { FacetController } from "./layout/facet-controller.js";
 import { applyARIA } from "./a11y/aria.js";
 import { KeyboardNavigator } from "./a11y/keyboard-nav.js";
 import { DataTableFallback } from "./a11y/data-table.js";
+import { initializeKeyframes, destroyKeyframes } from "./interactions/keyframes.js";
 
 const MIN_CHART_WIDTH = 280;
 const RESIZE_DEBOUNCE_MS = 100;
@@ -190,6 +191,9 @@ export class myIOchart {
       this.dataTable.initialize();
       applyARIA(this);
     }
+    initializeKeyframes(this);
+    this.derived.currentLayers = this.config.layers;
+    this.syncLegacyAliases();
     this.captureLegacyAliases();
     if (this.derived.currentLayers.length > 0) {
       this.setClipPath(this.derived.currentLayers[0].type);
@@ -471,6 +475,36 @@ export class myIOchart {
     this.renderCurrentLayers();
   }
 
+  // Shiny proxy partial-update (myIOProxy): swap the data of existing layers by
+  // label and re-render through the same data-join path as a normal update.
+  // Unlike a full renderValue (which destroys + recreates the chart), this
+  // preserves brush/zoom/toggle state and animates the transition. Unknown
+  // labels are ignored; `updates` is [{ label, data }].
+  updateData(updates) {
+    if (!Array.isArray(updates) || !this.config || !Array.isArray(this.config.layers)) {
+      return;
+    }
+    // Null-prototype map so a layer label like "__proto__"/"constructor" cannot
+    // pollute Object.prototype, and an incoming update.label of "__proto__"
+    // cannot spoof a match; the hasOwnProperty guard reinforces this.
+    const byLabel = Object.create(null);
+    this.config.layers.forEach(function(layer) { byLabel[layer.label] = layer; });
+    updates.forEach(function(update) {
+      if (update && Object.prototype.hasOwnProperty.call(byLabel, update.label)) {
+        const layer = byLabel[update.label];
+        const validData = Array.isArray(update.data) ||
+          (layer.type === "treemap" && update.data !== null &&
+            typeof update.data === "object" && !Array.isArray(update.data));
+        if (validData) layer.data = update.data;
+      }
+    });
+    // Mutating the shared layer objects updates whatever subset is currently
+    // visible (derived.currentLayers references the same objects), so we do NOT
+    // reset currentLayers here — that would re-show legend-toggled-off layers.
+    this.syncLegacyAliases();
+    this.renderCurrentLayers();
+  }
+
   resize(width, height) {
     if (!width || !height || width < 2 || height < 2) return;
     const wasSheetOpen = this.runtime && this.runtime._sheetOpen === true;
@@ -495,6 +529,7 @@ export class myIOchart {
 
   destroy() {
     this.emit("destroy", {});
+    destroyKeyframes(this);
     clearTimeout(this.runtime && this.runtime.resizeTimer);
     clearTimeout(this.runtime && this.runtime.tooltipHideTimer);
     if (this.facetController) {

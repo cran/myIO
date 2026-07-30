@@ -456,7 +456,7 @@ subset:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">myio_list_chart_types</span>())   <span class="co"># chart types</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] 36</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">myio_list_functions</span>())     <span class="co"># exported function signatures</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; [1] 41</span></span></code></pre></div></li>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; [1] 47</span></span></code></pre></div></li>
 <li><p><strong>Stable, machine-readable errors.</strong> Every result is
 <code>{ valid, errors }</code>, and each error has a fixed
 <code>code</code> your code can branch on — never prose to parse:
@@ -622,7 +622,7 @@ myIO’s API:</p>
 <p>To give the six tools to an MCP-aware assistant (Claude Desktop,
 Claude Code, Cursor), run the bundled Node server. It is deliberately
 separate from the R package so installing myIO never pulls in Node
-dependencies.</p>
+dependencies. The MCP server requires Node.js 20 or newer.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="bu">cd</span> mcp</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="ex">npm</span> install</span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="ex">node</span> server.mjs</span></code></pre></div>
