@@ -17,8 +17,21 @@
 #' @param cursor Logical. When \code{TRUE}, a hover in any linked chart draws
 #'   a synchronized crosshair on every sibling chart in the same group.
 #'   Default \code{FALSE}.
-#' @param cursorAxis Character. Which axis to sync: \code{"x"} (default),
-#'   \code{"y"}, or \code{"xy"}. Only \code{"x"} is active in v1.2.
+#' @param cursorAxis Character. Which axis to sync: \code{"x"} (default) draws
+#'   a vertical rule at the hovered x value, \code{"y"} draws a horizontal rule
+#'   at the hovered y value, and \code{"xy"} draws both. A rule is only drawn
+#'   when the sibling chart can map the incoming value through its own scale.
+#'
+#' @details
+#' Selections travel on the Crosstalk key space, so a myIO chart matches
+#' rows against sibling widgets (\pkg{DT}, \pkg{plotly}, \pkg{leaflet}) by
+#' the same keys they use. The keys are matched to the chart's rows by
+#' position, which requires the data passed to \code{addIoLayer()} to be
+#' \code{shared_data$data()} in its original row order. If a layer's row
+#' count does not match the number of keys -- for example after re-filtering
+#' the frame, or after \code{updateMyIOData()} replaced the rows -- the
+#' chart falls back to matching within its own widget only, rather than
+#' pairing keys with the wrong rows.
 #'
 #' @return A modified \code{myIO} htmlwidget with Crosstalk linking.
 #' @seealso \code{\link{linkCharts}} for group-identifier linking that does

@@ -9,7 +9,7 @@ import { bindRollover } from "./interactions/rollover.js";
 import { deriveChartRender, applyDerivedScales } from "./derive/chart-render.js";
 import { validateLayers } from "./derive/validate.js";
 import { transitionGrouped, transitionStacked, getGroupedDataObject } from "./renderers/groupedBarHelpers.js";
-import { syncAxes } from "./layout/axes.js";
+import { syncAxes, fitLeftMargin, fitTopMargin } from "./layout/axes.js";
 import { syncLegend, syncOrdinalLegendData } from "./layout/legend.js";
 import { syncReferenceLines } from "./layout/reference-lines.js";
 import { getChartHeight, initializeScaffold, renderChartTitle, updateScaffoldLayout } from "./layout/scaffold.js";
@@ -26,6 +26,12 @@ import { initializeKeyframes, destroyKeyframes } from "./interactions/keyframes.
 
 const MIN_CHART_WIDTH = 280;
 const RESIZE_DEBOUNCE_MS = 100;
+const LAYER_MARK_PREFIXES = [
+  "area", "bar", "bracket", "candlestick", "crosshairX", "crosshairY",
+  "heatmap", "hexbin", "line", "medianLine", "point", "rangeBar", "rangeBar-error",
+  "sankey", "sankey-flow", "sankey-label", "sankey-node", "text-annotation",
+  "tree", "waterfall", "waterfall-connector", "whiskerCap"
+];
 
 const EventEmitter = {
   on(event, handler) {
@@ -97,6 +103,7 @@ export class myIOchart {
     this.options = this.config ? {
       margin: this.config.layout.margin,
       suppressLegend: this.config.layout.suppressLegend,
+      legendTitle: this.config.layout.legendTitle,
       suppressAxis: this.config.layout.suppressAxis,
       xlim: this.config.scales.xlim,
       ylim: this.config.scales.ylim,
@@ -111,6 +118,7 @@ export class myIOchart {
       yAxisFormat: this.config.axes.yAxisFormat,
       toolTipFormat: this.config.axes.toolTipFormat,
       xTickLabels: this.config.axes.xTickLabels,
+      yTickLabels: this.config.axes.yTickLabels,
       xAxisLabel: this.config.axes.xAxisLabel,
       yAxisLabel: this.config.axes.yAxisLabel,
       dragPoints: this.config.interactions.dragPoints,
@@ -240,10 +248,16 @@ export class myIOchart {
         var activeLabels = this.derived.currentLayers.map(function(l) { return l.label; });
         var allLabels = this.config.layers.map(function(l) { return l.label; });
         var chartArea = this.dom.chartArea;
-        allLabels.forEach(function(label) {
+        allLabels.forEach((label) => {
           if (activeLabels.indexOf(label) === -1) {
-            var safeName = String(label).replace(/\s+/g, "");
-            chartArea.selectAll("[class*='tag-'][class*='-" + safeName + "']").remove();
+            var layer = this.config.layers.find(function(candidate) { return candidate.label === label; });
+            var rootClass = "tag-" + layer.type + "-" + layer.id;
+            var classes = new Set(LAYER_MARK_PREFIXES.map((prefix) => tagName(prefix, this.dom.element.id, label)));
+            chartArea.selectAll("*").filter(function() {
+              return Array.from(this.classList).some(function(token) {
+                return token === rootClass || classes.has(token);
+              });
+            }).remove();
           }
         });
       }
@@ -256,7 +270,13 @@ export class myIOchart {
         return;
       }
       if (this.derived.currentLayers.length === 0) {
-        this.renderEmptyState();
+        // Every layer hidden from the legend is still a chart: keep the FAB and
+        // panel so the legend can bring the layers back.
+        var userHidden = Array.isArray(this.runtime._hiddenLayerKeys) && this.runtime._hiddenLayerKeys.length > 0;
+        this.renderEmptyState({ keepControls: userHidden });
+        if (userHidden) {
+          syncLegend(this, this.runtime._legendState);
+        }
         if (!this.config.sparkline) {
           applyARIA(this);
         }
@@ -271,7 +291,28 @@ export class myIOchart {
       addFAB(this);
       this.emit("afterScales", { state });
       syncAxes(this, state, options);
+      // Both fits have to run: || would short-circuit the second one away.
+      var refitLeft = fitLeftMargin(this, state);
+      var refitTop = fitTopMargin(this, state);
+      if (refitLeft || refitTop) {
+        updateScaffoldLayout(this);
+        applyDerivedScales(this, state);
+        this.syncLegacyAliases();
+        syncAxes(this, state, options);
+      }
       this.routeLayers(this.derived.currentLayers);
+      // A renderer can re-format the y axis after the fit above (groupedBar's
+      // stacked layout swaps in its own scale, groupedBarHelpers.js), so the
+      // labels can end up wider than fitLeftMargin measured. One bounded
+      // re-fit -- never a loop: the redraw re-runs updateYAxis with the same
+      // scale, so a third pass computes the same target and returns false.
+      if (fitLeftMargin(this, state)) {
+        updateScaffoldLayout(this);
+        applyDerivedScales(this, state);
+        this.syncLegacyAliases();
+        syncAxes(this, state, options);
+        this.routeLayers(this.derived.currentLayers);
+      }
       syncReferenceLines(this, state, options);
       syncLegend(this, state);
       bindRollover(this);
@@ -311,9 +352,10 @@ export class myIOchart {
     }
   }
 
-  renderEmptyState() {
+  renderEmptyState(opts) {
+    var keepControls = !!(opts && opts.keepControls);
     if (this.dom.chartArea) {
-      this.dom.chartArea.selectAll("*").interrupt().remove();
+      this.dom.chartArea.selectAll(":scope > :not(defs)").interrupt().remove();
     }
     if (this.dom.plot) {
       this.dom.plot.selectAll(".x-axis, .y-axis").interrupt().remove();
@@ -321,10 +363,10 @@ export class myIOchart {
     }
     removeHoverOverlay(this);
     hideChartTooltip(this);
-    if (this.runtime && this.runtime._sheetOpen) {
+    if (!keepControls && this.runtime && this.runtime._sheetOpen) {
       closePanel(this, { returnFocus: false });
     }
-    if (this.dom.element) {
+    if (!keepControls && this.dom.element) {
       d3.select(this.dom.element).select(".myIO-fab").style("display", "none");
     }
     if (this.dom.svg) {
@@ -353,16 +395,35 @@ export class myIOchart {
     var colors = layers.map(function(layer) {
       return layer.color;
     });
-    var bandwidth = ((this.runtime.width - (this.config.layout.margin.right + this.config.layout.margin.left)) / (data[0].length + 1)) / colors.length;
+    var that = this;
+    var draw = function() {
+      var bandwidth = ((that.runtime.width - (that.config.layout.margin.right + that.config.layout.margin.left)) / (data[0].length + 1)) / colors.length;
+      if (that.runtime.layout === "grouped") {
+        transitionGrouped(that, data, colors, bandwidth);
+      } else {
+        transitionStacked(that, data, colors, bandwidth);
+      }
+    };
 
-    if (this.runtime.layout === "stacked") {
-      transitionGrouped(this, data, colors, bandwidth);
-      this.runtime.layout = "grouped";
-    } else {
-      transitionStacked(this, data, colors, bandwidth);
-      this.runtime.layout = "stacked";
-    }
+    this.runtime.layout = this.runtime.layout === "stacked" ? "grouped" : "stacked";
+    draw();
     this.syncLegacyAliases();
+
+    // The stacked scale can format wider tick labels than the last fit saw.
+    // updateYAxis stashed the strings it is rendering, so this measures the NEW
+    // labels even though d3's transition has not written them to the DOM yet.
+    var state = deriveChartRender(this);
+    if (fitLeftMargin(this, state)) {
+      updateScaffoldLayout(this);
+      applyDerivedScales(this, state);
+      this.syncLegacyAliases();
+      // draw() routes to transitionStacked/transitionGrouped, which only touch
+      // the y axis itself -- they never re-place the rotated axis title. Without
+      // syncAxes the plot group moves to the new margin while the title stays at
+      // the old one, which just slides the overlap right instead of clearing it.
+      syncAxes(this, state, { isInitialRender: true });
+      draw();
+    }
   }
 
   setClipPath(type) {
@@ -397,9 +458,16 @@ export class myIOchart {
         // Apply per-layer opacity
         var opacity = (layer.options && layer.options.opacity != null)
           ? layer.options.opacity : 1;
-        if (opacity < 1) {
-          var safeName = String(layer.label).replace(/\s+/g, "");
-          that.dom.chartArea.selectAll("[class*='tag-'][class*='-" + safeName + "']")
+        if (opacity <= 1) {
+          var rootClass = "tag-" + layer.type + "-" + layer.id;
+          var classes = new Set(LAYER_MARK_PREFIXES.map((prefix) => tagName(prefix, that.dom.element.id, layer.label)));
+          that.dom.chartArea.selectAll("*").filter(function() {
+            return Array.from(this.classList).some(function(token) {
+              return token === rootClass || classes.has(token);
+            });
+          }).filter(function() {
+            return opacity < 1 || this.hasAttribute("data-myio-layer-opacity");
+          }).attr("data-myio-layer-opacity", opacity < 1 ? opacity : null)
             .style("opacity", opacity);
         }
       }

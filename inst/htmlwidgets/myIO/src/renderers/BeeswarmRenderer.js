@@ -1,3 +1,5 @@
+import { easingFor, staggerDelay } from "../transitions/easing.js";
+
 export class BeeswarmRenderer {
   static type = "beeswarm";
   static traits = {
@@ -37,7 +39,7 @@ export class BeeswarmRenderer {
 
     for (var i = 0; i < data.length; i++) {
       var cx = xScale(data[i][xVar]);
-      var baseY = yScale(data[i][yVar]);
+      var baseY = yScale(data[i][yVar]) + (typeof yScale.bandwidth === "function" ? yScale.bandwidth() / 2 : 0);
       var dy = 0;
       var found = false;
 
@@ -79,7 +81,7 @@ export class BeeswarmRenderer {
       .data(data, function(d) { return d._source_key; });
 
     points.exit()
-      .transition().duration(transitionSpeed)
+      .transition().ease(easingFor(chart, d3.easeCubic)).duration(transitionSpeed).delay(staggerDelay(chart, 0))
       .attr("fill-opacity", 0)
       .remove();
 
@@ -92,7 +94,7 @@ export class BeeswarmRenderer {
       .attr("fill-opacity", 0);
 
     pointsEnter.merge(points)
-      .transition().duration(transitionSpeed)
+      .transition().ease(easingFor(chart, d3.easeCubic)).duration(transitionSpeed).delay(staggerDelay(chart, 0))
       .attr("cx", function(d) { return d._beeswarm_cx; })
       .attr("cy", function(d) { return d._beeswarm_cy; })
       .attr("r", radius)
@@ -106,9 +108,10 @@ export class BeeswarmRenderer {
 
   formatTooltip(chart, d, layer) {
     var yFormat = chart.runtime.activeYFormat || d3.format("s");
+    var yValue = d[layer.mapping.y_var];
     return {
       title: { text: String(d[layer.mapping.x_var]) },
-      items: [{ color: layer.color, label: layer.label, value: yFormat(d[layer.mapping.y_var]) }]
+      items: [{ color: layer.color, label: layer.label, value: typeof yValue === "number" ? yFormat(yValue) : String(yValue) }]
     };
   }
 

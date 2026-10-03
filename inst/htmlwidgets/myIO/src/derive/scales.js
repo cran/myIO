@@ -1,7 +1,7 @@
 import { getChartHeight } from "../layout/scaffold.js";
 
 const X_DOMAIN_BUFFER = 0.05;
-const Y_DOMAIN_BUFFER = 0.15;
+const Y_DOMAIN_BUFFER = 0.05;
 
 export function createBins(chart, lys) {
   var m = chart.margin;
@@ -123,8 +123,8 @@ export function processScales(chart, lys, semantics) {
 
   var x_buffer = Math.max(Math.abs(x_max - x_min) * X_DOMAIN_BUFFER, 0.5);
   var xExtent = [
-    chart.config.scales.xlim.min ? +chart.config.scales.xlim.min : x_min - x_buffer,
-    chart.config.scales.xlim.max ? +chart.config.scales.xlim.max : x_max + x_buffer
+    hasLimit(chart.config.scales.xlim.min) ? +chart.config.scales.xlim.min : x_min - x_buffer,
+    hasLimit(chart.config.scales.xlim.max) ? +chart.config.scales.xlim.max : x_max + x_buffer
   ];
 
   chart.derived.xBanded = [].concat.apply([], x_bands).map(function(d) {
@@ -138,10 +138,18 @@ export function processScales(chart, lys, semantics) {
     y_max = y_max + 1;
   }
 
+  var zeroBaseline = scaleSemantics.yZeroBaseline === true;
+  if (zeroBaseline) {
+    y_min = Math.min(0, y_min);
+    y_max = Math.max(0, y_max);
+  }
+
   var y_buffer = Math.abs(y_max - y_min) * Y_DOMAIN_BUFFER;
+  // Padding must not manufacture a negative axis for data that never goes negative.
+  var y_lower = y_min >= 0 ? Math.max(0, y_min - y_buffer) : y_min - y_buffer;
   var yExtent = [
-    chart.config.scales.ylim.min ? +chart.config.scales.ylim.min : y_min - y_buffer,
-    chart.config.scales.ylim.max ? +chart.config.scales.ylim.max : y_max + y_buffer
+    hasLimit(chart.config.scales.ylim.min) ? +chart.config.scales.ylim.min : (zeroBaseline && y_min === 0 ? 0 : y_lower),
+    hasLimit(chart.config.scales.ylim.max) ? +chart.config.scales.ylim.max : (zeroBaseline && y_max === 0 ? 0 : y_max + y_buffer)
   ];
 
   chart.derived.yBanded = [].concat.apply([], y_bands).map(function(d) {
@@ -169,10 +177,17 @@ export function processScales(chart, lys, semantics) {
         .domain(chart.config.scales.flipAxis === true ? chart.derived.xBanded : chart.derived.yBanded);
       break;
     default:
+      // A reversed y axis puts the domain minimum at the top of the plot, which
+      // is what rank charts want: rank 1 above rank 5.
+      var yRange = scaleSemantics.yReversed === true
+        ? [0, chartHeight - (m.top + m.bottom)]
+        : [chartHeight - (m.top + m.bottom), 0];
       chart.derived.yScale = d3.scaleLinear()
-        .range([chartHeight - (m.top + m.bottom), 0])
+        .range(yRange)
         .domain(chart.config.scales.flipAxis === true ? xExtent : yExtent);
   }
+
+  chart.derived.scaleSemantics = scaleSemantics;
 
   if (chart.config.scales.colorScheme && chart.config.scales.colorScheme.enabled) {
     chart.derived.colorDiscrete = d3.scaleOrdinal()
@@ -187,4 +202,8 @@ export function processScales(chart, lys, semantics) {
 
 function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
+}
+
+function hasLimit(value) {
+  return value !== null && value !== undefined && value !== "" && Number.isFinite(+value);
 }

@@ -20,7 +20,7 @@ export class WaterfallRenderer {
       .selectAll("." + tagName("waterfall", chart.element.id, layer.label))
       .data(layer.data);
 
-    bars.exit().transition().duration(transitionSpeed).style("opacity", 0).remove();
+    bars.exit().transition().ease(easingFor(chart, d3.easeCubic)).duration(transitionSpeed).style("opacity", 0).remove();
 
     var newBars = bars.enter()
       .append("rect")
@@ -67,7 +67,7 @@ export class WaterfallRenderer {
       .selectAll("." + tagName("waterfall-connector", chart.element.id, layer.label))
       .data(connectors);
 
-    connectorLines.exit().transition().duration(transitionSpeed).style("opacity", 0).remove();
+    connectorLines.exit().transition().ease(easingFor(chart, d3.easeCubic)).duration(transitionSpeed).style("opacity", 0).remove();
 
     var newConnectors = connectorLines.enter()
       .append("line")
@@ -86,7 +86,7 @@ export class WaterfallRenderer {
       .transition()
       .ease(easingFor(chart, d3.easeQuad))
       .duration(transitionSpeed)
-      .style("opacity", 1)
+      .style("opacity", layer.options && layer.options.opacity != null ? layer.options.opacity : 1)
       .attr("x1", function(d, i) { return chart.xScale(layer.data[i][xVar]) + barOffset + barWidth; })
       .attr("x2", function(d, i) { return chart.xScale(layer.data[i + 1][xVar]) + barOffset; })
       .attr("y1", function(d) { return chart.yScale(+d._cumulative_y); })
@@ -105,7 +105,7 @@ export class WaterfallRenderer {
   }
 
   remove(chart, layer) {
-    chart.dom.chartArea.selectAll("." + tagName("waterfall", chart.dom.element.id, layer.label)).transition().duration(500).style("opacity", 0).remove();
-    chart.dom.chartArea.selectAll("." + tagName("waterfall-connector", chart.dom.element.id, layer.label)).transition().duration(500).style("opacity", 0).remove();
+    chart.dom.chartArea.selectAll("." + tagName("waterfall", chart.dom.element.id, layer.label)).transition().ease(easingFor(chart, d3.easeCubic)).duration(500).style("opacity", 0).remove();
+    chart.dom.chartArea.selectAll("." + tagName("waterfall-connector", chart.dom.element.id, layer.label)).transition().ease(easingFor(chart, d3.easeCubic)).duration(500).style("opacity", 0).remove();
   }
 }

@@ -1,8 +1,11 @@
 import { BUTTON_LABELS, handleAction, iconDownload, iconImage, iconLayers, iconLegend, iconPercent, iconPDF, iconClipboard } from "./buttons.js";
-import { buildLegendData } from "../layout/legend-data.js";
+import { buildLegendData, resolveLegendTitle } from "../layout/legend-data.js";
 import {
+  estimateTitleWidth,
   legendAvailableWidth,
+  legendFirstRowWidth,
   legendItemLabel,
+  legendTitleText,
   resolveLegendPlacement,
   uniqueLegendItems
 } from "../layout/legend-placement.js";
@@ -25,6 +28,14 @@ export function addFAB(chart) {
 
   d3.select(chart.element).select(".myIO-fab").remove();
 
+  // A sparkline is a 20-60px inline mark with no axes and no legend (see
+  // applySparklineOverrides): a 40px overlay button would cover ~8% of it and
+  // sit on top of the last data points. Guarding here rather than at the call
+  // sites covers renderCurrentLayers(), addButtons() and any future caller.
+  if (chart.config && chart.config.sparkline) {
+    return null;
+  }
+
   if (isEmptyChart(chart)) {
     return null;
   }
@@ -39,19 +50,27 @@ export function addFAB(chart) {
     .html(iconLegend());
 
   fab.on("click", function() {
-    openPanel(chart);
+    togglePanel(chart);
   });
 
   fab.on("keydown", function(event) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openPanel(chart);
+      togglePanel(chart);
     }
   });
 
   chart.dom.fab = fab;
   syncFABState(chart);
   return fab;
+}
+
+function togglePanel(chart) {
+  if (chart.runtime && chart.runtime._sheetOpen) {
+    closePanel(chart);
+  } else {
+    openPanel(chart);
+  }
 }
 
 export function openPanel(chart) {
@@ -138,6 +157,7 @@ export function openPanel(chart) {
 
   chart.runtime._sheetOpen = true;
   attachSheetKeydown(chart);
+  attachVisibilityWatch(chart);
   syncFABState(chart);
 
   window.requestAnimationFrame(function() {
@@ -176,6 +196,7 @@ export function closePanel(chart, opts) {
   }
 
   detachSheetKeydown(chart);
+  detachVisibilityWatch(chart);
   chart.runtime._sheetOpen = false;
   syncFABState(chart);
 
@@ -247,6 +268,13 @@ export function renderSheetLegend(chart) {
 
   if (legendSection) {
     legendSection.style("display", null);
+  }
+
+  var titleText = legendTitleText(resolveLegendTitle(chart, legendData));
+  if (titleText) {
+    legendBody.append("div")
+      .attr("class", "myIO-sheet-legend-title")
+      .text(titleText);
   }
 
   if (legendData.type === "continuous") {
@@ -335,6 +363,19 @@ function renderOrdinalLegend(chart, container, legendData) {
   container.classed("myIO-sheet-legend--grid", useGrid);
 
   legendData.items.forEach(function(item) {
+    if (!legendData.toggleable) {
+      var entry = container.append("div")
+        .attr("class", "myIO-sheet-legend-item myIO-sheet-legend-item--static")
+        .attr("data-key", item.key);
+      entry.append("span")
+        .attr("class", "myIO-sheet-swatch")
+        .style("background-color", item.color);
+      entry.append("span")
+        .attr("class", "myIO-sheet-legend-label")
+        .text(item.label);
+      return;
+    }
+
     var button = container.append("button")
       .attr("type", "button")
       .attr("class", "myIO-sheet-legend-item")
@@ -449,7 +490,9 @@ function sheetLegendPlacement(chart) {
     type: legendData && legendData.type,
     labels: items.map(legendItemLabel),
     suppressLegend: !!(chart.options && chart.options.suppressLegend === true),
-    availableWidth: legendAvailableWidth(chart)
+    availableWidth: legendAvailableWidth(chart),
+    firstRowWidth: legendFirstRowWidth(chart),
+    titleWidth: estimateTitleWidth(resolveLegendTitle(chart, legendData))
   });
 }
 
@@ -508,8 +551,7 @@ function syncFABState(chart) {
   var isOpen = chart.runtime && chart.runtime._sheetOpen === true;
   chart.dom.fab
     .attr("aria-expanded", isOpen ? "true" : "false")
-    .attr("aria-label", isOpen ? "Close legend and actions" : "Legend and actions")
-    .html(isOpen ? iconClose() : iconLegend());
+    .attr("aria-label", isOpen ? "Close legend and actions" : "Legend and actions");
 }
 
 function attachSheetKeydown(chart) {
@@ -561,6 +603,39 @@ function detachSheetKeydown(chart) {
 
   document.removeEventListener("keydown", chart.runtime._sheetEscHandler);
   chart.runtime._sheetEscHandler = null;
+}
+
+// A Shiny navbarPage tab switch does NOT destroy the widget - Bootstrap only sets
+// display:none on the pane - so nothing else closes an open panel. An
+// IntersectionObserver on the widget root is the reliable, framework-agnostic
+// signal: a display:none ancestor collapses the element to a zero-area box, which
+// is exactly what distinguishes "hidden" from "merely scrolled out of view" (that
+// keeps a non-zero box). Only observed while a panel is open.
+function attachVisibilityWatch(chart) {
+  detachVisibilityWatch(chart);
+
+  if (!chart.element || typeof window.IntersectionObserver !== "function") {
+    return;
+  }
+
+  var observer = new window.IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      var box = entry.boundingClientRect;
+      if (box && box.width === 0 && box.height === 0) {
+        closePanel(chart, { returnFocus: false });
+      }
+    });
+  });
+
+  observer.observe(chart.element);
+  chart.runtime._sheetVisibilityObserver = observer;
+}
+
+function detachVisibilityWatch(chart) {
+  if (chart && chart.runtime && chart.runtime._sheetVisibilityObserver) {
+    chart.runtime._sheetVisibilityObserver.disconnect();
+    chart.runtime._sheetVisibilityObserver = null;
+  }
 }
 
 function cleanupPanelNodes(chart) {

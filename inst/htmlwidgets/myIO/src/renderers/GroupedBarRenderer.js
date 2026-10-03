@@ -1,10 +1,11 @@
+import { easingFor, staggerDelay } from "../transitions/easing.js";
 import { getGroupedDataObject, transitionGrouped, transitionStacked } from "./groupedBarHelpers.js";
 import { resolveColor } from "../utils/responsive.js";
 
 export class GroupedBarRenderer {
   static type = "groupedBar";
   static traits = { hasAxes: true, referenceLines: true, legendType: "layer", binning: false, rolloverStyle: "element", scaleCapabilities: { invertX: false } };
-  static scaleHints = { xScaleType: "band", yScaleType: "linear", yExtentFields: ["y_var"], domainMerge: "union" };
+  static scaleHints = { xScaleType: "band", yScaleType: "linear", yExtentFields: ["y_var"], yZeroBaseline: true, domainMerge: "union" };
   static dataContract = { x_var: { required: true }, y_var: { required: true, numeric: true }, group: { required: true } };
 
   render(chart, layer, layers) {
@@ -17,14 +18,20 @@ export class GroupedBarRenderer {
       chart.layout = "grouped";
     }
 
+    // Each series group carries its layer's root class so setLayerOpacity() reaches it.
+    function groupClass(d, i) {
+      return "tag-grouped-bar-g" + (lys[i] ? " tag-groupedBar-" + lys[i].id : "");
+    }
+
     const bars = chart.chart.selectAll("g").data(data);
     bars.exit().remove();
     bars.enter()
       .append("g")
       .style("fill", function(d, i) { return resolveColor(chart, d[layer.mapping.group], colors[i]); })
-      .attr("class", "tag-grouped-bar-g");
+      .attr("class", groupClass);
 
     bars.merge(bars)
+      .attr("class", groupClass)
       .style("fill", function(d, i) { return resolveColor(chart, d[layer.mapping.group], colors[i]); })
       .call(function() {
         if (chart.layout === "grouped") {
@@ -44,6 +51,6 @@ export class GroupedBarRenderer {
   }
 
   remove(chart) {
-    chart.dom.chartArea.selectAll(".tag-grouped-bar-g").transition().duration(500).style("opacity", 0).remove();
+    chart.dom.chartArea.selectAll(".tag-grouped-bar-g").transition().ease(easingFor(chart, d3.easeCubic)).duration(500).delay(staggerDelay(chart, 0)).style("opacity", 0).remove();
   }
 }

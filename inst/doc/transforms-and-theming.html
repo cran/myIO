@@ -512,11 +512,12 @@ waterfall renderer uses for floating bars:</p>
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="at">mapping =</span> <span class="fu">list</span>(<span class="at">x_var =</span> <span class="st">&quot;wt&quot;</span>, <span class="at">y_var =</span> <span class="st">&quot;mpg&quot;</span>),</span>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">options =</span> <span class="fu">list</span>(<span class="at">level =</span> <span class="fl">0.95</span>))</span></code></pre></div>
 <p>The <code>ci</code> transform accepts <code>method</code>
-(<code>&quot;lm&quot;</code> or <code>&quot;loess&quot;</code>), <code>level</code> (default
-0.95), and <code>interval</code> (<code>&quot;confidence&quot;</code> or
-<code>&quot;prediction&quot;</code>). The mapping only needs <code>x_var</code>
-and <code>y_var</code> — <code>low_y</code>/<code>high_y</code> are
-auto-injected.</p>
+(<code>&quot;lm&quot;</code>, <code>&quot;loess&quot;</code>, or <code>&quot;polynomial&quot;</code>),
+<code>level</code> (default 0.95), and <code>interval</code>
+(<code>&quot;confidence&quot;</code> or <code>&quot;prediction&quot;</code>). Use
+<code>degree</code> for polynomial and LOESS fits and <code>span</code>
+for LOESS. Map <code>x_var</code> and <code>y_var</code>; the transform
+supplies <code>low_y</code> and <code>high_y</code>.</p>
 </div>
 <div id="loess-smoothing" class="section level3">
 <h3>LOESS Smoothing</h3>

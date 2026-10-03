@@ -5,15 +5,21 @@
 #' this does not require Crosstalk --- it uses a shared group identifier and key
 #' column to coordinate selections across charts rendered in the same page.
 #'
+#' @details Cross-selection is driven by the brush, so at least one linked
+#'   chart must also call \code{\link{setBrush}}; brushing that chart
+#'   propagates the selected \code{on} values to every other chart in the
+#'   group, which dim their non-matching marks.
+#'
 #' @param ... myIO widget objects to link.
 #' @param on Character. Column name to match rows across charts.
 #' @param group Character. Group identifier. Default auto-generated.
 #' @param cursor Logical. When \code{TRUE}, a hover in any linked chart draws
 #'   a synchronized crosshair (and optional tooltip) on every sibling chart
 #'   in the same group. Default \code{FALSE}.
-#' @param cursorAxis Character. Which axis to sync: \code{"x"} (default),
-#'   \code{"y"}, or \code{"xy"}. Only \code{"x"} is active in v1.2; other
-#'   values are accepted but not yet rendered.
+#' @param cursorAxis Character. Which axis to sync: \code{"x"} (default) draws
+#'   a vertical rule at the hovered x value, \code{"y"} draws a horizontal rule
+#'   at the hovered y value, and \code{"xy"} draws both. A rule is only drawn
+#'   when the sibling chart can map the incoming value through its own scale.
 #' @return A list of modified myIO widgets with matching link config.
 #' @seealso \code{\link{setLinked}} for Crosstalk \code{SharedData}-based
 #'   linking (use that path inside Shiny or with reactive filters).
@@ -45,7 +51,7 @@ linkCharts <- function(..., on, group = NULL, cursor = FALSE, cursorAxis = "x") 
       enabled = TRUE,
       keyColumn = on,
       group = group,
-      mode = "bidirectional",
+      mode = "both",
       cursor = cursor,
       cursorAxis = cursorAxis
     )

@@ -8,59 +8,66 @@ composite_boxplot <- function(data, mapping, label, color, options) {
   base_color <- if (is.null(color)) OKABE_ITO_PALETTE[[1]] else if (length(color) > 0) color[[1]] else OKABE_ITO_PALETTE[[1]]
 
   quantiles <- transform_quantiles(data, mapping, options)$data
-  groups <- as.character(quantiles[[mapping$x_var]])
+  # Positions follow the shared rule (factor levels win, else ascending, C
+  # locale for characters) so boxplot, violin and ridgeline agree.
+  groups <- as.character(order_group_values(unique(data[[mapping$x_var]])))
   positions <- seq_along(groups)
-  position_lookup <- stats::setNames(positions, groups)
+  # transform_quantiles() and transform_median() each derive their own row
+  # order from unique(x_values), which is data-encounter order. Index them by
+  # group NAME, never by position: a positional read would pair one group's
+  # box with another group's median.
+  quantile_idx <- match(groups, as.character(quantiles[[mapping$x_var]]))
 
   if (whisker_type == "minmax") {
     group_values <- lapply(groups, function(group_value) {
-      values <- data[data[[mapping$x_var]] == group_value, mapping$y_var]
+      values <- data[group_matches(as.character(data[[mapping$x_var]]), group_value), mapping$y_var]
       values <- values[!is.na(values)]
       c(whisker_low = min(values), whisker_high = max(values))
     })
     whisker_df <- do.call(rbind, group_values)
   } else {
-    whisker_df <- quantiles[, c("whisker_low", "whisker_high"), drop = FALSE]
+    whisker_df <- quantiles[quantile_idx, c("whisker_low", "whisker_high"), drop = FALSE]
   }
 
   median_df <- transform_median(data, mapping, options)$data
+  median_idx <- match(groups, as.character(median_df[[mapping$x_var]]))
   outliers_df <- transform_outliers(data, mapping, options)$data
 
   box_data <- data.frame(
     x_var = positions,
-    low_y = quantiles$q1,
-    high_y = quantiles$q3,
-    group = groups,
+    low_y = quantiles$q1[quantile_idx],
+    high_y = quantiles$q3[quantile_idx],
+    group = group_labels(groups),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
 
   whisker_low_data <- data.frame(
     x_var = positions,
-    y_var = whisker_df$whisker_low,
-    low_y = whisker_df$whisker_low,
-    high_y = quantiles$q1,
-    group = groups,
+    y_var = whisker_df[, "whisker_low"],
+    low_y = whisker_df[, "whisker_low"],
+    high_y = quantiles$q1[quantile_idx],
+    group = group_labels(groups),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
 
   whisker_high_data <- data.frame(
     x_var = positions,
-    y_var = whisker_df$whisker_high,
-    low_y = quantiles$q3,
-    high_y = whisker_df$whisker_high,
-    group = groups,
+    y_var = whisker_df[, "whisker_high"],
+    low_y = quantiles$q3[quantile_idx],
+    high_y = whisker_df[, "whisker_high"],
+    group = group_labels(groups),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
 
   median_plot_data <- data.frame(
     x_var = positions,
-    y_var = median_df[[mapping$y_var]],
-    low_y = median_df[[mapping$y_var]],
-    high_y = median_df[[mapping$y_var]],
-    group = groups,
+    y_var = median_df[[mapping$y_var]][median_idx],
+    low_y = median_df[[mapping$y_var]][median_idx],
+    high_y = median_df[[mapping$y_var]][median_idx],
+    group = group_labels(groups),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
@@ -69,9 +76,9 @@ composite_boxplot <- function(data, mapping, label, color, options) {
   if (show_outliers && nrow(outliers_df) > 0) {
     outlier_groups <- as.character(outliers_df[[mapping$x_var]])
     outlier_plot_data <- data.frame(
-      x_var = unname(position_lookup[outlier_groups]),
+      x_var = match(outlier_groups, groups),
       y_var = outliers_df[[mapping$y_var]],
-      group = outlier_groups,
+      group = group_labels(groups)[match(outlier_groups, groups)],
       stringsAsFactors = FALSE,
       check.names = FALSE
     )

@@ -5,6 +5,9 @@ const DEFAULT_SCALE_HINTS = {
   yScaleType: "linear",
   xExtentFields: ["x_var"],
   yExtentFields: ["y_var"],
+  yZeroBaseline: false,
+  yReversed: false,
+  yIntegerTicks: false,
   domainMerge: "union"
 };
 
@@ -44,6 +47,9 @@ export function resolveScaleSemantics(chart, layers) {
   var xExtentFields = new Set();
   var yExtentFields = new Set();
   var domainMerge = "union";
+  var yZeroBaseline = false;
+  var yReversed = false;
+  var yIntegerTicks = false;
 
   (layers || []).forEach(function(layer) {
     var hints = getScaleHintsForLayer(layer);
@@ -83,6 +89,21 @@ export function resolveScaleSemantics(chart, layers) {
     if (hints && hints.domainMerge === "independent") {
       domainMerge = "independent";
     }
+
+    if (hints && hints.yZeroBaseline === true) {
+      yZeroBaseline = true;
+    }
+
+    // A reversed or integer-ticked y axis is meaningless once the axes are
+    // swapped, so both hints are dropped under flipAxis rather than landing on
+    // what is now the x axis.
+    if (hints && hints.yReversed === true && !flipAxis) {
+      yReversed = true;
+    }
+
+    if (hints && hints.yIntegerTicks === true && !flipAxis) {
+      yIntegerTicks = true;
+    }
   });
 
   if (xTypes.size > 1 || yTypes.size > 1) {
@@ -97,6 +118,9 @@ export function resolveScaleSemantics(chart, layers) {
     yScaleType: yTypes.size > 0 ? Array.from(yTypes)[0] : resolveFallbackScaleType(chart, "y"),
     xExtentFields: Array.from(xExtentFields).length > 0 ? Array.from(xExtentFields) : DEFAULT_SCALE_HINTS.xExtentFields,
     yExtentFields: Array.from(yExtentFields).length > 0 ? Array.from(yExtentFields) : DEFAULT_SCALE_HINTS.yExtentFields,
+    yZeroBaseline: yZeroBaseline,
+    yReversed: yReversed,
+    yIntegerTicks: yIntegerTicks,
     domainMerge: domainMerge
   };
 }

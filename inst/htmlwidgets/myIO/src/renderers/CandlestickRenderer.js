@@ -34,7 +34,7 @@ export class CandlestickRenderer {
       .selectAll("." + tagName("candlestick", chart.element.id, layer.label))
       .data(layer.data);
 
-    candle.exit().transition().duration(transitionSpeed).style("opacity", 0).remove();
+    candle.exit().transition().ease(easingFor(chart, d3.easeCubic)).duration(transitionSpeed).style("opacity", 0).remove();
 
     var enter = candle.enter().append("g")
       .attr("class", tagName("candlestick", chart.element.id, layer.label))
@@ -63,7 +63,7 @@ export class CandlestickRenderer {
 
     merged
       .transition().ease(easingFor(chart, d3.easeQuad)).duration(transitionSpeed)
-      .style("opacity", 1);
+      .style("opacity", layer.options && layer.options.opacity != null ? layer.options.opacity : 1);
 
     merged.select("line.wick")
       .transition().ease(easingFor(chart, d3.easeQuad)).duration(transitionSpeed)
@@ -98,6 +98,6 @@ export class CandlestickRenderer {
   }
 
   remove(chart, layer) {
-    chart.dom.chartArea.selectAll("." + tagName("candlestick", chart.dom.element.id, layer.label)).transition().duration(500).style("opacity", 0).remove();
+    chart.dom.chartArea.selectAll("." + tagName("candlestick", chart.dom.element.id, layer.label)).transition().ease(easingFor(chart, d3.easeCubic)).duration(500).style("opacity", 0).remove();
   }
 }

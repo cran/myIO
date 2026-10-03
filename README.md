@@ -4,13 +4,13 @@
 ![JS coverage](man/figures/js-coverage-badge.svg)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![version](https://img.shields.io/badge/version-1.3.0-blue)
+![version](https://img.shields.io/badge/version-1.4.0-blue)
 
 # myIO
 
 An R package for creating interactive `d3.js` visualizations using `htmlwidgets`. Supports 36 chart types including scatter plots, line charts, uncertainty views, statistical composites, and more — all composable through a piped API.
 
-[Live Demo](https://mortonanalytics.github.io/myIO/)
+[Live Demo](https://www.morton-analytics.com/myio/)
 
 ## Installation
 
@@ -44,7 +44,9 @@ myIO() |>
   )
 ```
 
-## Supported Chart Types
+## Chart Type Examples
+
+The table below covers common chart types. See the [Chart Types](https://mortonanalytics.github.io/myIO/articles/chart-types.html) article for more examples, or run `myio_list_chart_types()` for the complete list.
 
 | Type | `type` value |
 |------|-------------|
@@ -116,6 +118,7 @@ Customize plots by chaining additional functions:
 - `flipAxis()` — Swap x and y axes
 - `suppressAxis()` — Hide axes
 - `suppressLegend()` — Hide the legend
+- `setLegendTitle()` — Title the legend with the grouping variable
 - `dragPoints()` — Enable draggable points
 - `setReferenceLines()` — Add reference lines
 

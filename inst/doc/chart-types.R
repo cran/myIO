@@ -237,7 +237,7 @@ library(myIO)
 #     mapping = list(x_var = "hp", y_var = "mpg", group = "cyl"),
 #     options = list(overlap = 0.5)
 #   ) |>
-#   setAxisFormat(xLabel = "Horsepower", yLabel = "Density")
+#   setAxisFormat(xLabel = "Horsepower", yLabel = "Cylinders")
 
 ## ----qq, eval = FALSE---------------------------------------------------------
 # myIO() |>

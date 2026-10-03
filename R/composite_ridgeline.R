@@ -4,8 +4,11 @@
 composite_ridgeline <- function(data, mapping, label, color, options) {
   overlap <- if (is.null(options$overlap)) 0.4 else as.numeric(options$overlap)
   bandwidth <- options$bandwidth
-  group_values <- unique(data[[mapping$group]])
-  group_labels <- as.character(group_values)
+  # Ridges stack upward from baseline 1, so the first group renders at the
+  # bottom. order_group_values() defines the shared rule: factor level order
+  # wins, everything else sorts ascending, character sorting in the C locale.
+  group_values <- order_group_values(unique(data[[mapping$group]]))
+  group_labels <- group_labels(group_values)
   n_groups <- length(group_labels)
   group_colors <- if (is.null(color)) rep_len(OKABE_ITO_PALETTE, n_groups) else rep_len(color, n_groups)
 
@@ -15,7 +18,7 @@ composite_ridgeline <- function(data, mapping, label, color, options) {
 
   for (i in seq_along(group_values)) {
     group_value <- group_values[[i]]
-    group_data <- data[data[[mapping$group]] == group_value, , drop = FALSE]
+    group_data <- data[group_matches(data[[mapping$group]], group_value), , drop = FALSE]
     if (nrow(group_data) == 0L) next
 
     density_data <- transform_density(
